@@ -7,7 +7,7 @@ I work with HTML, CSS, JavaScript and PHP. I can help with responsive layouts, b
 ## Selected work
 
 - **[Emberstead](https://darkbasilisk.itch.io/emberstead)** — my browser colony-survival game, published as KalGames. The [mobile portrait update](https://darkbasilisk.itch.io/emberstead/devlog/1662720/emberstead-v107-mobile-portrait-update) documents work on touch scrolling, responsive panels and mobile navigation.
-- **[Merged open-source contribution](https://github.com/open-covenant/covenant/pull/286)** — a small launch-plan documentation correction accepted upstream in Open Covenant.
+- **[Merged open-source contribution](https://github.com/open-covenant/covenant/pull/286)** — a small launch-plan documentation correction accepted upstream in Open Covenant.\n- **[Workflow reliability case study](https://github.com/premiuslol/premiuslol/tree/main/proof/workflow-reliability)** — a synthetic/local, runnable example of duplicate-safe actions, bounded retries and reconciliation after uncertain external results. It is not client work or a production integration.
 
 ## Work with me
 
