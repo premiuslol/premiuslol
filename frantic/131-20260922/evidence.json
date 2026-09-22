@@ -1,0 +1,37 @@
+{
+  "summary": "Real 0.25 USDC Ausca Document OCR run completed on Base using a 21,530-byte scanned PDF. Provider, output digest, source digest, Base settlement and Runx notarization were independently verified; after the earlier pending-review cap cleared, Frantic #131 was claimed without repeating the provider payment.",
+  "invocation_id": "paid_8efd46ae-36c9-41ef-ba04-932c25cde97e",
+  "offer_revision": "ocr-fixed-r8",
+  "offer_revision_digest": "sha256:cbb1a3959b730ccac70b99bf72e1e58192cb924203854e6c3800fd87250fa4ad",
+  "output_digest": "sha256:034e0f487de972bfb7d2e4da065558e6ceb3549784a1ec3bedf7c3e2231524af",
+  "source_digest": "sha256:4ad0156942d1c26a4aa74fe6d52c082c6871b33b0e933f40566f6740fdae0ebb",
+  "artifact_ref": "runx:artifact:sha256:da9433934f5478c90b85df16380b2c16165d857741689fdeecc19699dacfaa45",
+  "source_url": "https://raw.githubusercontent.com/cseas/ocr-table/master/pdf/sample.pdf",
+  "settled_transaction": "0x3a4d34dd8d9cd3b3459b1b08941263e9cdfe346ed5a159721a11701d22ae5f73",
+  "receipt_ref": "https://runx.ai/r/98b381eeb73a8267a1672856541f23a7752fee5a44b864eaad975a4986b425cd",
+  "observations": [
+    {"step":"discovery","elapsed_ms":263,"detail":"Read SKILL and live document.ocr offer; pinned ocr-fixed-r8 and schema digests."},
+    {"step":"artifact","elapsed_ms":1476,"detail":"Committed 21,530-byte application/pdf; returned ref/digest/media type/size matched local bytes."},
+    {"step":"challenge","elapsed_ms":1960,"detail":"Unsigned POST /v1/extract-text returned x402 v2, 250000 atomic USDC, Base, expected asset/payTo."},
+    {"step":"payment","elapsed_ms":8509,"detail":"Base tx settled exactly 250000 atomic USDC; receipt status 1."},
+    {"step":"invocation","elapsed_ms":7637,"detail":"Paid request returned HTTP 202 status=accepted, initial state admitted, settlement metadata present."},
+    {"step":"wait","elapsed_ms":18352,"detail":"One owner-page poll reached succeeded; independent readback revalidated terminal state."},
+    {"step":"result","elapsed_ms":0,"detail":"Schema valid, 31 OCR lines, source digest matched input; recomputed sorted compact JSON digest matched output_digest."},
+    {"step":"receipt","elapsed_ms":6811,"detail":"Immediate receipt fetch briefly returned 404; same URL became readable after Runx notarization."},
+    {"step":"total","elapsed_ms":184931,"detail":"Final live preparation through receipt notarization, including local wallet review/signing."}
+  ],
+  "findings": [
+    "Naming is split across document-ocr, document.ocr, text-extract schema filenames and /v1/extract-text.",
+    "The live 402 contains a Bazaar example idempotency key alongside the authoritative runx.invocation idempotency key.",
+    "SKILL prose implies per-line page values, but the schema makes page optional and this PDF result omitted page on all 31 lines.",
+    "receipt_ref.public_url can be returned before the public receipt route is readable; this run showed a brief 404 before notarization."
+  ],
+  "claim_state": {
+    "status": "active",
+    "claim_id": "28e0a6bb-6b27-4be4-98f0-8ccc46b560f0",
+    "claimed_at": "2026-09-22T10:20:25.212Z",
+    "deliver_deadline_at": "2026-09-22T13:44:52.909Z",
+    "recovery_note": "The earlier claim POST was authoritatively rejected with HTTP 409 pending_review_limit. After #132/#133 review cleared, that exact rejected attempt was reconciled locally and one fresh claim succeeded. No provider payment or OCR invocation was repeated."
+  },
+  "redaction_note": "No wallet private key, seed, Frantic token, wallet password, payment signature, or provider capability is included."
+}
