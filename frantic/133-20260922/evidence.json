@@ -1,0 +1,82 @@
+{
+  "schema": "frantic.ausca.media_transcription.evidence.v1",
+  "bounty_number": 133,
+  "claim_id": "556e5c36-c6bf-4c45-a6e1-69f11d6142e3",
+  "summary": "A real $0.40 Ausca Media Transcription purchase on Base completed end to end after one replay-conflict recovery; the final invocation succeeded, the transcript matched its source and output digests, and Runx notarized the public receipt.",
+  "final_invocation": {
+    "invocation_id": "paid_5ea32dea-c072-440e-abeb-4c7fb25b3212",
+    "offer_id": "media.transcription",
+    "offer_revision": "transcription-bytes-r6",
+    "offer_revision_digest": "sha256:4a9d20f6a8e7cde3a3b92ad951c9e256a6b57ad8309da57eb751660ccafd56fb",
+    "input_schema_digest": "sha256:7104c2ab18922a8af6556e1db88de929bc93338520758702c1aa7c59e311681e",
+    "output_schema_digest": "sha256:e49c0818147668b6e69e4f16d500cb40dc9f3831d8fad9ddf1809be631a9d436",
+    "idempotency_key": "frantic-133-b2f184f8f796280d5739b38fd1d4b9d9",
+    "state": "succeeded",
+    "updated_at": "2026-09-22T01:50:57.040Z",
+    "output_digest": "sha256:303767a3038ff710f8283e037ddf971a8557c872d37c02cdc68e0f24c1bf6274"
+  },
+  "artifact": {
+    "artifact_ref": "runx:artifact:sha256:7fbc12ac8f36975c6db4cb42d5d4a72849b0c4af2e072ff9aa56030bf406c280",
+    "content_digest": "sha256:28c214064d116e393e06253dd4e44f1a5b104c5c8774de1d9b20e02939410303",
+    "media_type": "audio/wav",
+    "media_format": "wav",
+    "language_code": "en-US",
+    "size_bytes": 488328,
+    "idempotency_key": "frantic-133-a4a69c6c8fc1c3b2b1ba7a24303b3556"
+  },
+  "payment": {
+    "amount_atomic": "400000",
+    "amount_usdc": 0.4,
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "network": "eip155:8453",
+    "payer": "0x10efed37fbb1e72b35158fcd0bf84a29e24c55bf",
+    "pay_to": "0x26572ff23c6c52bfb1a69cb0c9114a8be443b422",
+    "transaction_hash": "0xfefe9486fb16633d7ed52a880c189ee58d2509f5f0627090b30eafdd747eaae2",
+    "block_number": 51626234,
+    "block_timestamp": "2026-09-22T01:50:15Z",
+    "transaction_status": 1
+  },
+  "result_validation": {
+    "source_digest_matches_artifact": true,
+    "source_digest": "sha256:28c214064d116e393e06253dd4e44f1a5b104c5c8774de1d9b20e02939410303",
+    "published_output_schema": "https://ausca.com/schemas/offers/transcription.output.schema.json",
+    "schema_constraints_checked": true,
+    "segment_count": 2,
+    "computed_output_digest": "sha256:303767a3038ff710f8283e037ddf971a8557c872d37c02cdc68e0f24c1bf6274",
+    "declared_output_digest": "sha256:303767a3038ff710f8283e037ddf971a8557c872d37c02cdc68e0f24c1bf6274",
+    "output_digest_matches": true
+  },
+  "receipt": {
+    "public_url": "https://runx.ai/r/0dffa555f4057e550d8c75db22c64df2dca3ad7561ee64cc671804467e0e69a1",
+    "publisher": "ausca",
+    "venue": "Ausca",
+    "subject": "media.transcription",
+    "declared_amount_cents": 40,
+    "currency": "USD",
+    "occurred_at": "2026-09-22T01:50:57.040Z",
+    "notarized_at": "2026-09-22T01:51:11.041Z",
+    "trust_rung": 1
+  },
+  "observations": [
+    {"step":"discovery","elapsed_ms":219,"observed_at":"2026-09-22T01:48:46.487Z","surface":"GET /v1/offers/media.transcription after reading https://ausca.com/skills/media-transcription/SKILL.md and https://ausca.com/openapi.yaml","details":"Resolved media.transcription revision transcription-bytes-r6 and its schema digests. The SKILL covered the async purchase path; the OpenAPI, rather than the SKILL prose, was where the HTTP-200 semantic-refusal behavior was explicit."},
+    {"step":"artifact","elapsed_ms":4026,"observed_at":"2026-09-22T01:48:50.732Z","request":"POST /v1/artifacts","details":"Committed/recovered the same 488328-byte WAV using stable artifact idempotency; returned artifact_ref and digest matched the local bytes and media type."},
+    {"step":"challenge","elapsed_ms":1534,"observed_at":"2026-09-22T01:48:52.266Z","request":"POST /v1/transcribe-media without PAYMENT-SIGNATURE","status_code":402,"details":"x402 v2 required 400000 atomic USDC on eip155:8453, asset 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913, payTo 0x26572ff23c6c52bfb1a69cb0c9114a8be443b422, bound to final invocation paid_5ea32dea-c072-440e-abeb-4c7fb25b3212."},
+    {"step":"recovery_dead_end","elapsed_ms":1197640,"observed_at":"2026-09-22T01:48:46.487Z","details":"The first prepared invocation paid_6cbaa2af-7776-454a-aaad-02e25e8bc9e8 used idempotency key frantic-133-aec17af88c166b1927a46807e36b687d. A later paid attempt on that identity returned HTTP 200 with body status=refused, code=replay_conflict, reason='The run precondition was rejected.', and no PAYMENT-RESPONSE. No 0.40 USDC transfer existed for that failed identity. Recovery required a fresh invocation/idempotency identity; this elapsed value is the whole human debugging/recovery window, not request latency."},
+    {"step":"payment","elapsed_ms":82734,"observed_at":"2026-09-22T01:50:15Z","details":"From final challenge preparation to Base block inclusion, including owner MetaMask confirmation and chain settlement. PAYMENT-RESPONSE reported success=true and tx 0xfefe9486fb16633d7ed52a880c189ee58d2509f5f0627090b30eafdd747eaae2. Base receipt status=1; USDC Transfer event moved 0.40 from payer to payTo."},
+    {"step":"invocation","elapsed_ms":82734,"observed_at":"2026-09-22T01:50:15Z","details":"The paid response body was status=accepted with invocation_id paid_5ea32dea-c072-440e-abeb-4c7fb25b3212 and state=admitted, plus PAYMENT-RESPONSE settlement data. This interval overlaps payment because the local owner wrapper did not separately persist upstream request latency or the upstream numeric success status (it accepted either 200 or 202); its same-origin /pay response to the browser was HTTP 200."},
+    {"step":"wait","elapsed_ms":42040,"observed_at":"2026-09-22T01:50:57.040Z","poll_count":1,"details":"One authoritative GET /v1/invocations/paid_5ea32dea-c072-440e-abeb-4c7fb25b3212 observed terminal state=succeeded. Elapsed time is Base settlement-block timestamp to provider terminal updated_at."},
+    {"step":"result","elapsed_ms":1440,"observed_at":"post-terminal verification","details":"Fetched the terminal invocation, checked exact output fields/segment constraints against the published transcription output schema, confirmed source_digest equals the committed WAV digest, and recomputed SHA-256 over compact canonical JSON. The recomputed digest exactly matched output_digest."},
+    {"step":"receipt","elapsed_ms":14001,"observed_at":"2026-09-22T01:51:11.041Z","details":"Runx receipt 0dffa555f405... published by Ausca states subject media.transcription, declared amount 0.40 USD, occurred_at 2026-09-22T01:50:57.040Z. The public page is L1 notarized/hash-only and explicitly does not publish the transaction id."},
+    {"step":"total","elapsed_ms":1342194,"observed_at":"2026-09-22T01:51:11.041Z","details":"Elapsed from the first instrumented provider integration start at 2026-09-22T01:28:48.847Z through Runx notarization. This includes the replay-conflict dead end and recovery, so it is end-to-end wall-clock rather than service latency."}
+  ],
+  "issues": [
+    {"step":"paid retry/recovery","identifier":"replay_conflict / The run precondition was rejected.","finding":"The refusal was technically correct for a non-identical replay, but the reason did not identify which precondition or binding changed or say that this invocation identity could not be reused after re-preparation."},
+    {"step":"HTTP response handling","identifier":"POST /v1/transcribe-media HTTP 200 with status=refused","finding":"A semantic refusal is carried under HTTP 200. The OpenAPI documents this, but a straightforward client can accidentally treat the transport status as success; my first wrapper did exactly that and hid the useful replay_conflict body behind a generic paid_request_uncertain_200 error."},
+    {"step":"receipt verification","identifier":"https://runx.ai/r/0dffa555f4057e550d8c75db22c64df2dca3ad7561ee64cc671804467e0e69a1","finding":"The public receipt clearly states Ausca/media.transcription/$0.40 and its time, but intentionally omits payer and transaction identifiers, so blockchain settlement had to be verified separately from Base RPC for the bounty evidence."}
+  ],
+  "proposed_changes": [
+    "For replay_conflict, return a structured reason that names the mismatched binding/precondition (or its digest) and gives the safe recovery rule: exact retransmission may reuse the key; re-preparation requires a fresh invocation/key.",
+    "Call out near the direct-HTTP steps in SKILL.md that HTTP 200 can contain status=refused and clients must branch on the JSON status, not only the transport code."
+  ],
+  "redaction_note": "No wallet private key, seed, Frantic agent token, EIP-3009 signature, or other credential is present. Payment signatures are represented only by the literal placeholder <EIP3009_SIGNATURE_REDACTED> in the human report."
+}
