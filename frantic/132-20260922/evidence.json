@@ -1,0 +1,165 @@
+{
+  "schema": "frantic.ausca.document_analysis.evidence.v1",
+  "bounty_number": 132,
+  "claim_id": "a620ca2e-0392-4fd0-8b45-be047dffbf49",
+  "summary": "A real 0.30 USDC Ausca Document Analysis purchase on Base completed end to end after one earlier unpaid HTTP-503 attempt was safely abandoned; the final invocation succeeded, its manifest and page artifact were independently validated, and Runx notarized the public receipt.",
+  "final_invocation": {
+    "invocation_id": "paid_c80f18ba-e9de-4040-9da8-5081ae630f4c",
+    "offer_id": "document.analysis",
+    "offer_revision": "analysis-bytes-r7",
+    "offer_revision_digest": "sha256:ff16bf19f7a2de0ac19e646bcef953efdbe7a27f8e3cbec652ec82598884ef09",
+    "input_schema_digest": "sha256:7093216a29925031972d61a7ab5f6013936aac9f81c3c54f51a00a3fef66759b",
+    "output_schema_digest": "sha256:730cf6fb1e6f26fd5ebe335fab86da10099fd0db4f177ba1a2540b4756e00900",
+    "idempotency_key": "frantic-132-fresh-20260922-8d71a4b2-0471d9a54bdcfcc8bcc599a523cf917b",
+    "state": "succeeded",
+    "updated_at": "2026-09-22T02:46:36.041Z",
+    "output_digest": "sha256:39068f3e173766eb5af30f8244fd61323563f6c2b9ecc46c5b7920c79a9101a5"
+  },
+  "artifact": {
+    "artifact_ref": "runx:artifact:sha256:f162602b295527fc4f6fedc91b0efe4e5df6b626e197f587ae50388a63833d9d",
+    "content_digest": "sha256:16af3ade3e7ecb011866e87405d819b3a68de3bdb0d8b94655f424f3c6d732b6",
+    "media_type": "image/png",
+    "size_bytes": 36728,
+    "feature_types": [
+      "FORMS",
+      "TABLES",
+      "LAYOUT"
+    ]
+  },
+  "payment": {
+    "amount_atomic": "300000",
+    "amount_usdc": 0.3,
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "network": "eip155:8453",
+    "payer": "0x10efed37fbb1e72b35158fcd0bf84a29e24c55bf",
+    "pay_to": "0x26572ff23c6c52bfb1a69cb0c9114a8be443b422",
+    "transaction_hash": "0xf24a914f10ffda9bfb1e0d2b1d07f9d947e4a92d81ad9ed86164b544ef4228e1",
+    "block_number": 51627909,
+    "block_timestamp": "2026-09-22T02:46:05Z",
+    "transaction_status": 1
+  },
+  "result_validation": {
+    "source_digest_matches_artifact": true,
+    "source_digest": "sha256:16af3ade3e7ecb011866e87405d819b3a68de3bdb0d8b94655f424f3c6d732b6",
+    "manifest_schema": "ausca.document_analysis.manifest.v1",
+    "manifest_schema_valid": true,
+    "computed_output_digest": "sha256:39068f3e173766eb5af30f8244fd61323563f6c2b9ecc46c5b7920c79a9101a5",
+    "declared_output_digest": "sha256:39068f3e173766eb5af30f8244fd61323563f6c2b9ecc46c5b7920c79a9101a5",
+    "output_digest_matches": true,
+    "feature_counts": {
+      "FORMS": 10,
+      "LAYOUT": 10,
+      "TABLES": 1
+    },
+    "page_count": 1,
+    "page_artifact": {
+      "page_index": 1,
+      "size_bytes": 57722,
+      "content_digest": "sha256:a618038177efa7ee730fec3da376a85827bedcc2cafa7f9959fccbfe5e3f9bdd",
+      "bytes_digest_matches": true,
+      "schema": "ausca.document_analysis.page.v1",
+      "schema_valid": true,
+      "line_count": 22,
+      "block_count": 168
+    }
+  },
+  "receipt": {
+    "public_url": "https://runx.ai/r/dadec9f1a5e8626a0c2e636d084082db3bca417403e537f5f90f8874dd0be675",
+    "publisher": "ausca",
+    "subject": "document.analysis",
+    "declared_amount_cents": 30,
+    "currency": "USD",
+    "occurred_at": "2026-09-22T02:46:36.041Z",
+    "notarized_at": "2026-09-22T02:46:49.442Z",
+    "trust_rung": 1
+  },
+  "observations": [
+    {
+      "step": "discovery",
+      "elapsed_ms": 254,
+      "observed_at": "2026-09-22T02:44:04Z",
+      "surface": "GET /v1/offers/document.analysis after reading the Document Analysis SKILL and OpenAPI",
+      "details": "Resolved document.analysis revision analysis-bytes-r7 and exact schema/revision digests. The input artifact was the already verified 36,728-byte PNG commitment."
+    },
+    {
+      "step": "challenge",
+      "elapsed_ms": 1684,
+      "observed_at": "2026-09-22T02:44:05.933Z",
+      "request": "POST /v1/analyze-document without PAYMENT-SIGNATURE",
+      "status_code": 402,
+      "details": "x402 v2 fixed 300000 atomic USDC on eip155:8453, asset 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913, payTo 0x26572ff23c6c52bfb1a69cb0c9114a8be443b422, bound to invocation paid_c80f18ba-e9de-4040-9da8-5081ae630f4c."
+    },
+    {
+      "step": "recovery_dead_end",
+      "elapsed_ms": 1040000,
+      "observed_at": "2026-09-22T02:43:00Z",
+      "details": "An earlier prepared identity paid_0f577a3d-2896-4fc7-9132-06e4bcdfa316 produced HTTP 503 after one signed submission. Repeated authoritative reads stayed state=admitted with updated_at=2026-09-22T02:26:50.066Z, while Base balance and transfer logs showed no 0.30 USDC settlement and no receipt/result appeared. After its EIP-3009 authorization expired, that identity was abandoned without replay; the local wrapper was repaired to preserve safe provider status/code/reason fields before creating this fresh identity."
+    },
+    {
+      "step": "payment",
+      "elapsed_ms": 3765,
+      "observed_at": "2026-09-22T02:46:05Z",
+      "details": "From final signed POST submission at 02:46:01.235Z to Base block inclusion. PAYMENT-RESPONSE reported success=true and tx 0xf24a914f10ffda9bfb1e0d2b1d07f9d947e4a92d81ad9ed86164b544ef4228e1; chain receipt status=1 and the USDC Transfer event moved exactly 300000 atomic units from payer to payTo. Challenge-ready to settlement was about 119067 ms including human review/signing."
+    },
+    {
+      "step": "invocation",
+      "elapsed_ms": 2987,
+      "observed_at": "2026-09-22T02:46:04.223Z",
+      "status_code": 202,
+      "details": "The repaired local wrapper preserved the actual provider response: HTTP 202, body status=accepted, invocation_id paid_c80f18ba-e9de-4040-9da8-5081ae630f4c, state=admitted, and PAYMENT-RESPONSE present."
+    },
+    {
+      "step": "wait",
+      "elapsed_ms": 31041,
+      "observed_at": "2026-09-22T02:46:36.041Z",
+      "poll_count": 1,
+      "details": "Authoritative GET /v1/invocations/paid_c80f18ba-e9de-4040-9da8-5081ae630f4c observed terminal state=succeeded. Elapsed is Base settlement-block timestamp to provider terminal updated_at."
+    },
+    {
+      "step": "result",
+      "elapsed_ms": 3836,
+      "observed_at": "post-terminal verification",
+      "details": "Re-read the terminal invocation, verified manifest schema/source digest/feature counts/page commitments, recomputed compact-JSON SHA-256 exactly matching output_digest, minted one short-lived access URL locally for the page artifact, downloaded 57,722 bytes, verified its SHA-256, and parsed a schema-valid document-analysis page with 22 lines and 168 blocks. The signed download URL was never logged or published."
+    },
+    {
+      "step": "receipt",
+      "elapsed_ms": 13401,
+      "observed_at": "2026-09-22T02:46:49.442Z",
+      "details": "Runx receipt dadec9f1a5e8... is L1 notarized. The public page says Published by Ausca, Ausca Document Analysis completed, declared amount 0.30 USD, and intentionally omits wallet/transaction identifiers."
+    },
+    {
+      "step": "total",
+      "elapsed_ms": 163509,
+      "observed_at": "2026-09-22T02:46:49.442Z",
+      "details": "Elapsed from the final fresh offer/challenge preparation at 02:44:05.933Z through Runx notarization. The earlier failed identity is recorded separately as a recovery dead end, not folded into the successful final-run latency."
+    }
+  ],
+  "issues": [
+    {
+      "step": "failed paid attempt / state reconciliation",
+      "identifier": "paid_0f577a3d-2896-4fc7-9132-06e4bcdfa316 / HTTP 503 / state=admitted",
+      "finding": "After the failed signed request, the invocation remained publicly readable as admitted for many minutes even though no USDC transfer, terminal result, or receipt existed. That state is hard to interpret safely from the current direct-HTTP guidance and forced separate chain reconciliation plus authorization-expiry waiting before a fresh identity could be created."
+    },
+    {
+      "step": "client HTTP error handling",
+      "identifier": "paid_request_uncertain_503",
+      "finding": "My first local wrapper collapsed every non-200/202 response into a generic error and discarded the provider's safe status/code/reason fields. The repaired wrapper now records HTTP status, JSON status/code/reason/message, response keys and PAYMENT-RESPONSE presence while still excluding signatures and secrets. This made the successful HTTP 202 response auditable and should be the default integration pattern."
+    },
+    {
+      "step": "page artifact retrieval",
+      "identifier": "POST /v1/artifacts/{artifact_ref}/access -> artifact.download_url",
+      "finding": "The SKILL explains that this route mints a 60-second URL, but it does not show the exact response shape. My verifier initially expected a top-level URL and had to inspect the safe key shape to learn that the URL is nested at artifact.download_url."
+    },
+    {
+      "step": "receipt verification",
+      "identifier": "https://runx.ai/r/dadec9f1a5e8626a0c2e636d084082db3bca417403e537f5f90f8874dd0be675",
+      "finding": "The receipt clearly identifies Ausca Document Analysis and 0.30 USD but intentionally omits the payer and transaction identifiers, so the blockchain settlement evidence had to be verified separately through Base RPC."
+    }
+  ],
+  "proposed_changes": [
+    "Document the meaning and safe recovery rule for an invocation that remains state=admitted after an HTTP 5xx with no PAYMENT-RESPONSE/settlement evidence, including when a caller may safely abandon an expired payment authorization and prepare a fresh identity.",
+    "Show the artifact-access response shape in the Document Analysis SKILL, including that the temporary URL is returned at artifact.download_url.",
+    "For direct HTTP examples, emphasize preserving typed provider error fields on non-2xx responses while keeping payment signatures and capabilities out of logs."
+  ],
+  "redaction_note": "No wallet private key, seed, Frantic agent token, MetaMask password, EIP-3009 signature, capability, or temporary signed artifact URL is present."
+}
