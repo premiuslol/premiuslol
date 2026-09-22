@@ -1,0 +1,132 @@
+{
+  "schema": "frantic.ausca.media_transcription.evidence.v1",
+  "bounty": 133,
+  "claim_id": "556e5c36-c6bf-4c45-a6e1-69f11d6142e3",
+  "summary": "Completed a real paid Ausca media.transcription run for Frantic #133, including immutable artifact commit, live x402 challenge, Base USDC settlement, asynchronous invocation polling, digest validation, and public receipt verification; the run also exposed concrete replay, response-shape, receipt-verification, and transcription-quality issues.",
+  "offer": {
+    "offer_id": "media.transcription",
+    "offer_revision": "transcription-bytes-r6",
+    "offer_revision_digest": "sha256:4a9d20f6a8e7cde3a3b92ad951c9e256a6b57ad8309da57eb751660ccafd56fb",
+    "input_schema_digest": "sha256:7104c2ab18922a8af6556e1db88de929bc93338520758702c1aa7c59e311681e",
+    "output_schema_digest": "sha256:e49c0818147668b6e69e4f16d500cb40dc9f3831d8fad9ddf1809be631a9d436"
+  },
+  "artifact": {
+    "size_bytes": 488328,
+    "media_type": "audio/wav",
+    "content_digest": "sha256:28c214064d116e393e06253dd4e44f1a5b104c5c8774de1d9b20e02939410303",
+    "artifact_ref": "runx:artifact:sha256:7fbc12ac8f36975c6db4cb42d5d4a72849b0c4af2e072ff9aa56030bf406c280"
+  },
+  "successful_invocation": {
+    "invocation_id": "paid_5ea32dea-c072-440e-abeb-4c7fb25b3212",
+    "idempotency_key": "frantic-133-b2f184f8f796280d5739b38fd1d4b9d9",
+    "state": "succeeded",
+    "completed_at_utc": "2026-09-22T01:50:57.040Z",
+    "source_digest": "sha256:28c214064d116e393e06253dd4e44f1a5b104c5c8774de1d9b20e02939410303",
+    "output_digest": "sha256:303767a3038ff710f8283e037ddf971a8557c872d37c02cdc68e0f24c1bf6274",
+    "language_code": "en-US",
+    "transcript": "Frantic Bounty 133 media transcription verification. This short recording tests the OSCA transcription workflow from artifact commit through receipt validation.",
+    "segments": [
+      {
+        "start_seconds": 0,
+        "end_seconds": 3.89,
+        "text": "Frantic Bounty 133 media transcription verification."
+      },
+      {
+        "start_seconds": 4.56,
+        "end_seconds": 10.39,
+        "text": "This short recording tests the OSCA transcription workflow from artifact commit through receipt validation."
+      }
+    ]
+  },
+  "payment": {
+    "amount_usdc": 0.4,
+    "network": "Base / eip155:8453",
+    "asset": "USDC",
+    "payer": "0x10eFeD37FBb1E72b35158Fcd0bF84A29e24c55Bf",
+    "pay_to": "0x26572ff23c6c52bfb1a69cb0c9114a8be443b422",
+    "tx_hash": "0xfefe9486fb16633d7ed52a880c189ee58d2509f5f0627090b30eafdd747eaae2",
+    "block_number": 51626234,
+    "block_time_utc": "2026-09-22T01:50:15Z"
+  },
+  "receipt": {
+    "public_url": "https://runx.ai/r/0dffa555f4057e550d8c75db22c64df2dca3ad7561ee64cc671804467e0e69a1",
+    "uri": "runx:receipt:sha256:0dffa555f4057e550d8c75db22c64df2dca3ad7561ee64cc671804467e0e69a1",
+    "notarized_at_utc": "2026-09-22T01:51:11.041Z",
+    "published_claim": "Ausca Media Transcription completed",
+    "declared_amount_usd": 0.4,
+    "note": "Runx public page is hash-only L1 notarization and explicitly does not independently prove the blockchain transaction; Base USDC transfer was verified separately."
+  },
+  "observations": [
+    {
+      "step": "artifact_commit",
+      "timing_seconds": 4.026,
+      "detail": "Committed a 488,328-byte WAV as an immutable Ausca artifact; returned artifact content_digest exactly matched the local SHA-256."
+    },
+    {
+      "step": "offer_read",
+      "timing_seconds": 0.219,
+      "detail": "Read live media.transcription offer revision transcription-bytes-r6 and pinned revision/input/output schema digests before invoking."
+    },
+    {
+      "step": "unsigned_challenge",
+      "timing_seconds": 1.534,
+      "detail": "Unsigned POST returned x402 v2 PAYMENT-REQUIRED for exactly 400000 atomic USDC on eip155:8453, payTo 0x26572ff23c6c52bfb1a69cb0c9114a8be443b422."
+    },
+    {
+      "step": "replay_conflict",
+      "detail": "An earlier invocation identity returned HTTP 200 with status=refused, code=replay_conflict after a fresh payment authorization was attempted against the reused idempotency identity; no PAYMENT-RESPONSE was present and no outgoing USDC transfer was found for that attempt."
+    },
+    {
+      "step": "fresh_invocation",
+      "detail": "Generated a new invocation/idempotency identity while retaining the same immutable audio artifact; fresh invocation was paid_5ea32dea-c072-440e-abeb-4c7fb25b3212."
+    },
+    {
+      "step": "payment",
+      "timing_seconds_from_fresh_prepare_to_chain_confirmation": 82.734,
+      "detail": "EIP-3009/x402 authorization settled 0.40 USDC on Base in tx 0xfefe9486fb16633d7ed52a880c189ee58d2509f5f0627090b30eafdd747eaae2 at 2026-09-22T01:50:15Z."
+    },
+    {
+      "step": "async_wait",
+      "timing_seconds_from_chain_confirmation_to_terminal_state": 42.04,
+      "detail": "Invocation remained asynchronous after admission and reached state=succeeded at 2026-09-22T01:50:57.040Z."
+    },
+    {
+      "step": "result_validation",
+      "detail": "Output source_digest exactly matched the committed artifact digest; output_digest was sha256:303767a3038ff710f8283e037ddf971a8557c872d37c02cdc68e0f24c1bf6274; two timed segments were returned."
+    },
+    {
+      "step": "transcription_quality",
+      "detail": "The spoken proper name 'Ausca' in the second sentence was transcribed as 'OSCA', a concrete proper-noun recognition error in an otherwise accurate short clip."
+    },
+    {
+      "step": "receipt",
+      "timing_seconds_from_terminal_state_to_notarization": 14.001,
+      "detail": "Terminal invocation exposed Runx receipt 0dffa555...e69a1; public page says Published by Ausca, Media Transcription completed, declared amount 0.40 USD."
+    },
+    {
+      "step": "total_elapsed",
+      "fresh_success_path_seconds": 138.775,
+      "full_debug_path_seconds_approx": 1340.166,
+      "detail": "Fresh successful invocation path from prepared challenge at 01:48:52.266Z to receipt notarization at 01:51:11.041Z took about 138.8s. Including the earlier replay-conflict debugging from initial artifact creation at 01:28:50.875Z took about 22m20s."
+    }
+  ],
+  "issues": [
+    {
+      "id": "http_200_semantic_refusal",
+      "detail": "POST /v1/transcribe-media may return HTTP 200 for a semantic refusal. A client that treats 200 as success without parsing body.status can hide actionable codes such as replay_conflict."
+    },
+    {
+      "id": "replay_conflict_recovery",
+      "detail": "Reusing an invocation/idempotency identity with a newly generated payment authorization produced replay_conflict. The safe recovery path was not obvious until canonical invocation and chain state were separately reconciled, then a fresh idempotency identity was created."
+    },
+    {
+      "id": "receipt_chain_visibility",
+      "detail": "The public Runx receipt intentionally omits wallet addresses and transaction identifiers, so validating the actual Base USDC transfer required a separate chain read even though the page declared 0.40 USD."
+    },
+    {
+      "id": "proper_noun_error",
+      "detail": "The transcription changed the spoken product name 'Ausca' to 'OSCA' in the second sentence."
+    }
+  ],
+  "proposed_change": "Add a short paid-invocation decision table to the Media Transcription SKILL: parse body.status even on HTTP 200; for status=refused surface code/reason verbatim; for replay_conflict instruct callers to reconcile GET /v1/invocations/{id} plus settlement state before deciding whether a fresh idempotency identity is safe. This would have prevented two opaque payment attempts and made recovery deterministic."
+}
