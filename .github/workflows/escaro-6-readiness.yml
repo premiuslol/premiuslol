@@ -9,7 +9,7 @@ permissions:
 jobs:
   source-pinned-escrow-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,14 +21,27 @@ jobs:
           ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
           path: upstream
           persist-credentials: false
-      - name: Prepare test-only file against actual source
+      - uses: actions/checkout@v4
+        with:
+          repository: premiuslol/premiuslol
+          ref: prep/eth-legion-escaro-8-20261009
+          path: prior-eight
+          persist-credentials: false
+      - name: Apply only Escaro #6 additions atop exact existing #8 tests
         shell: bash
         run: |
           set -euo pipefail
-          cp packet/deliveries/eth-legion/escaro-6/model.combined.test.ts upstream/src/lib/model.test.ts
+          test "$(git -C upstream rev-parse HEAD)" = 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          cp prior-eight/deliveries/eth-legion/escaro-8/model.test.ts upstream/src/lib/model.test.ts
+          p="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/escaro-6/escaro_6_incremental_after_8.patch"
+          git -C upstream apply --check "$p"
+          git -C upstream apply "$p"
+          cmp packet/deliveries/eth-legion/escaro-6/model.combined.test.ts upstream/src/lib/model.test.ts
           test "$(git -C upstream status --short --untracked-files=all)" = "?? src/lib/model.test.ts"
           test -f upstream/src/lib/model.ts
-          git -C upstream diff --check
+          grep -q "describe('isPaid:" upstream/src/lib/model.test.ts
+          grep -q "describe('nextIssueId'" upstream/src/lib/model.test.ts
+          echo ESCARO_6_APPEND_ONLY_MATCHES_COMBINED_TESTS_PASS
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -46,3 +59,18 @@ jobs:
       - name: Build real application
         working-directory: upstream
         run: npm run build
+      - name: Install Chromium for upstream preview smoke
+        working-directory: upstream
+        run: npx playwright-core install --with-deps chromium
+      - name: Run upstream build-and-smoke on additive escrow tests
+        working-directory: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --port 3000 --strictPort &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000 >/dev/null
+          npm run test:smoke -- http://localhost:3000
