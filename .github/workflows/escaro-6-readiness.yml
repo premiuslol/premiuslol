@@ -1,0 +1,48 @@
+name: Escaro #6 private escrow test readiness
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-escaro-6-20261009
+permissions:
+  contents: read
+jobs:
+  source-pinned-escrow-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Escaro-Labs/escaro
+          ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          path: upstream
+          persist-credentials: false
+      - name: Prepare test-only file against actual source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp packet/deliveries/eth-legion/escaro-6/model.combined.test.ts upstream/src/lib/model.test.ts
+          test "$(git -C upstream status --short --untracked-files=all)" = "?? src/lib/model.test.ts"
+          test -f upstream/src/lib/model.ts
+          git -C upstream diff --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Install original dependencies without lifecycle scripts
+        working-directory: upstream
+        run: npm ci --ignore-scripts
+      - name: Temporarily provide upstream-missing Vitest; do not change delivery patch
+        working-directory: upstream
+        run: npm install --ignore-scripts --no-save vitest@2.1.9
+      - name: Run combined prior #8 plus #6 model regression suite
+        working-directory: upstream
+        run: npx vitest run src/lib/model.test.ts
+      - name: Build real application
+        working-directory: upstream
+        run: npm run build
