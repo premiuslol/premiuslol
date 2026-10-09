@@ -8,7 +8,7 @@ permissions:
 jobs:
   exact-source-ui-guard:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 22
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,3 +52,20 @@ jobs:
       - name: Production TypeScript and bundler build
         working-directory: upstream
         run: npm run build
+      - name: Install bundled test Chromium for local-preview acceptance
+        working-directory: upstream
+        run: npx playwright-core install --with-deps chromium
+      - name: Run upstream build-and-smoke and dedicated display-name UI acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp packet/deliveries/eth-legion/escaro-70/display-name-ui-check.mjs upstream/scripts/escaro-70-smoke.mjs
+          cd upstream
+          npm run preview -- --port 3000 --strictPort &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000 >/dev/null
+          npm run test:smoke -- http://localhost:3000
+          node scripts/escaro-70-smoke.mjs http://localhost:3000
