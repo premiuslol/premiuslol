@@ -59,8 +59,33 @@ jobs:
       - name: Full upstream tests
         working-directory: upstream
         run: pnpm test
-      - name: Lint and type-check
+      - name: Lint
         working-directory: upstream
+        run: pnpm run lint
+      - name: Compare exact TypeScript diagnostics with unpatched baseline
+        working-directory: upstream
+        shell: bash
         run: |
-          pnpm run lint
-          pnpm exec tsc --noEmit
+          set +e
+          pnpm exec tsc --noEmit --pretty false > "$RUNNER_TEMP/patched-tsc.txt" 2>&1
+          patched_exit=$?
+          git restore -- 'src/features/wallet/presentation/hooks/useWalletPay.ts'
+          pnpm exec tsc --noEmit --pretty false > "$RUNNER_TEMP/baseline-tsc.txt" 2>&1
+          baseline_exit=$?
+          set -e
+          echo "PATCHED_TSC_EXIT=$patched_exit BASELINE_TSC_EXIT=$baseline_exit"
+          if [ "$patched_exit" -ne "$baseline_exit" ]; then
+            echo "The patched and baseline TypeScript exit codes differ" >&2
+            diff -u "$RUNNER_TEMP/baseline-tsc.txt" "$RUNNER_TEMP/patched-tsc.txt" || true
+            exit 1
+          fi
+          if ! diff -u "$RUNNER_TEMP/baseline-tsc.txt" "$RUNNER_TEMP/patched-tsc.txt"; then
+            echo "The patch changed TypeScript diagnostics" >&2
+            exit 1
+          fi
+          if [ "$baseline_exit" -eq 0 ]; then
+            echo 'PATCHED_AND_ORIGINAL_TYPESCRIPT_CLEAN'
+          else
+            echo 'PATCH_INTRODUCED_ZERO_TYPESCRIPT_ERRORS; ORIGINAL_BASELINE_ALREADY_FAILS'
+            head -n 15 "$RUNNER_TEMP/baseline-tsc.txt"
+          fi
