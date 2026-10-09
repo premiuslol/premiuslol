@@ -1,0 +1,37 @@
+diff --git a/SECURITY.md b/SECURITY.md
+--- a/SECURITY.md
++++ b/SECURITY.md
+@@ -12,8 +12,16 @@
+ 
+ ## Scope
+ 
+-This policy covers the TrustMint contracts, SDK, deployment tooling, and frontend maintained in this repository. Third-party dependency vulnerabilities should be reported to their respective maintainers. Reports about a live deployment should identify the network and contract IDs; do not include private keys, recovery phrases, or personal identity documents.
+-
+-## Supported code
+-
+-Security fixes are made against the latest code on `main`. Older tags, forks, and deployed contracts do not update automatically. Contract operators are responsible for assessing and applying upgrades or redeployments.
++This policy covers the six Soroban contract crates under `contracts/`, the TypeScript client library in `sdk/`, the user-facing `frontend/`, and the deployment and development tooling maintained in this repository. Third-party dependency vulnerabilities should be reported to their respective maintainers. Reports about a live deployment should identify the network and contract IDs; do not include private keys, recovery phrases, or personal identity documents.
++
++## Supported versions and branches
++
++The current tagged release is **0.1.0** (see [CHANGELOG.md](CHANGELOG.md)); changes after that release are tracked under **Unreleased**. Security fixes are maintained on `main` only. We do not backport changes to previous release tags or automatically upgrade deployed contracts.
++
++| Version / branch | Receives security fixes? |
++| --- | --- |
++| `main` (development after `0.1.0`) | Yes — fixes are made on this branch |
++| `0.1.0` (latest tagged release) | No — tag is a frozen snapshot; no backports |
++| Older tags and forks | No — maintainers do not update these automatically |
++
++This describes **repository maintenance policy**, not an assurance that any deployed contract is secure. Contract operators are responsible for independently assessing and applying upgrades or redeployments.
+diff --git a/code-of-conduct.md b/code-of-conduct.md
+--- a/code-of-conduct.md
++++ b/code-of-conduct.md
+@@ -20,7 +20,7 @@
+ 
+ ## Enforcement
+ 
+-Instances of unacceptable behaviour may be reported privately to the repository maintainers through their GitHub profiles. Please do not use public issues for sensitive reports. Maintainers will review reports and take appropriate action based on the circumstances.
++Code-of-conduct incidents may be reported privately to the repository maintainers through their GitHub profiles. **Security vulnerabilities have a separate private reporting channel:** follow [SECURITY.md](SECURITY.md) rather than using the conduct-reporting route. Do not use public issues for sensitive reports. Maintainers will review conduct reports and take appropriate action based on the circumstances.
+ 
+ Maintainers have the right to remove, edit, or reject comments, commits, code, and other contributions that violate this Code of Conduct.
+ 
