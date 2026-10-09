@@ -1,0 +1,63 @@
+name: Vellara #98 security policy readiness
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-vellara-98-20261009
+permissions:
+  contents: read
+
+jobs:
+  pinned-document-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Vellara-Labs/vellara
+          ref: 669970a061210bc39c681972287ad3edc5d36724
+          path: upstream
+          persist-credentials: false
+      - name: Apply only security and reporting-policy patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/vellara-98/vellara_98.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          git -C upstream diff --check
+          expected=$(printf "SECURITY.md\ncode-of-conduct.md")
+          test "$(git -C upstream diff --name-only)" = "$expected"
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          root=Path('upstream')
+          release=re.findall(r'^## \[([0-9]+\.[0-9]+\.[0-9]+)\]', (root/'CHANGELOG.md').read_text(), re.M)[0]
+          sec=(root/'SECURITY.md').read_text()
+          coc=(root/'code-of-conduct.md').read_text()
+          assert release=='0.1.0', release
+          assert f'\x60{release}\x60 (latest tagged release)' in sec
+          assert '| \x60main\x60 (development after \x600.1.0\x60)' in sec
+          assert all(k in sec for k in ('\x60contracts/\x60', '\x60sdk/\x60', '\x60frontend/\x60'))
+          assert '[SECURITY.md](SECURITY.md)' in coc
+          assert 'Security vulnerabilities have a separate private reporting channel' in coc
+          assert not any('audit' in row and 'passed' in row for row in sec.splitlines())
+          print('SECURITY_VERSION_SCOPE_AND_REPORTING_GATE_PASS')
+          PY
+  cargo-testutils:
+    needs: pinned-document-verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Vellara-Labs/vellara
+          ref: 669970a061210bc39c681972287ad3edc5d36724
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Required upstream Rust contract tests
+        run: cargo test --features testutils
