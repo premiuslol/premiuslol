@@ -1,0 +1,54 @@
+name: Escaro #70 private empty-name guard readiness
+on:
+  push:
+    branches:
+      - prep/eth-legion-escaro-70-20261009
+permissions:
+  contents: read
+jobs:
+  exact-source-ui-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Escaro-Labs/escaro
+          ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          path: upstream
+          persist-credentials: false
+      - name: Apply one-file patch and inspect empty-name invariant
+        shell: bash
+        run: |
+          set -euo pipefail
+          p="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/escaro-70/escaro_70.patch"
+          git -C upstream apply --check "$p"
+          git -C upstream apply "$p"
+          git -C upstream diff --check
+          test "$(git -C upstream diff --name-only)" = "src/pages/contributor.tsx"
+          node - <<'JS'
+          const fs = require('fs');
+          const assert = require('node:assert/strict');
+          const text = fs.readFileSync('upstream/src/pages/contributor.tsx', 'utf8');
+          const region = text.slice(text.indexOf('export function ContributorSettings()'), text.indexOf('export function ContributorSettings()') + 2800);
+          assert(region.includes("setNameErr('Display name cannot be empty.')"));
+          assert(region.includes('role="alert"'));
+          assert(region.includes('aria-invalid={!!nameErr}'));
+          assert(region.indexOf("setNameErr('Display name cannot be empty.')") < region.indexOf('setState(s => ({ ...s, session:'));
+          assert(region.includes("if (nameErr) setNameErr('')"));
+          console.log('EMPTY_DISPLAY_NAME_FAILS_VISIBLE_BEFORE_STATE_MUTATION');
+          JS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Install with lifecycle scripts disabled
+        working-directory: upstream
+        run: npm ci --ignore-scripts
+      - name: Production TypeScript and bundler build
+        working-directory: upstream
+        run: npm run build
