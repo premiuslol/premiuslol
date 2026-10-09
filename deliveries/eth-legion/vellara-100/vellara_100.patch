@@ -1,0 +1,46 @@
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -128,21 +128,27 @@
+ ## Repository map
+ 
+ ```text
+-contracts/          Soroban contracts and unit tests
+-frontend/           React dashboard, wallet integration, and contract clients
+-sdk/                TypeScript clients for application developers
+-scripts/            Testnet identity, deployment, and verification helpers
+-tests/integration/  Local Stellar integration tests
+-docs/               Deployment and operations guidance
+-```
+-
+-## Project roadmap
+-
+-- Verify SEP-41 compatibility of the reference token
+-- Expand integration coverage across asset lifecycles
+-- Improve deployment and operator tooling
+-- Publish SDK usage guides for external applications
+-- Commission an independent Soroban security review
++contracts/          Soroban contract crates, interfaces and unit tests
++frontend/           React dashboard, wallet integration and contract clients
++sdk/                TypeScript clients and sdk/README.md setup guide
++tests/integration/  Local Stellar integration lifecycle tests and fixtures
++scripts/            Testnet identity, deployment and verification helpers
++docs/               Deployment and operator documentation
++assets/             Source logo and other visual assets used by this README
++docker-compose.yml  Local development services (see file before starting)
++code-of-conduct.md  Community conduct and private conduct-reporting path
++```
++
++## Project roadmap
++
++- [x] Implement reference-token allowance and SEP-41 compliance hooks — see [allowance.rs](contracts/rwa-token/src/allowance.rs) and [sep41_compliance.rs](contracts/rwa-token/src/sep41_compliance.rs).
++- [x] Add initial local lifecycle integration tests — [lifecycle.test.ts](tests/integration/lifecycle.test.ts) already covers KYC, compliance-engine, RWA-token and multi-invoice flows; it is not a complete asset-lifecycle test matrix.
++- [x] Publish a basic TypeScript SDK setup example — see [sdk/README.md](sdk/README.md).
++- [ ] Validate full reference-token SEP-41 interoperability and negative cases — start with [contracts/rwa-token/](contracts/rwa-token/) and `cargo test --features testutils`; code implementing an interface is not the same as independent compliance verification.
++- [ ] Expand local integration coverage beyond the implemented flows — add focused edge-case scenarios under [tests/integration/lifecycle.test.ts](tests/integration/lifecycle.test.ts); the integration suite requires its own local environment.
++- [ ] Improve deployment and operator tooling — start from [scripts/deploy.sh](scripts/deploy.sh) and the [mainnet readiness guide](docs/mainnet-deployment.md), then document reproducible rollbacks and validation.
++- [ ] Extend the SDK quickstart with tested end-to-end examples — build on [sdk/README.md](sdk/README.md) and `npm run build:sdk`.
++- [ ] Commission an independent Soroban security review — start with the [security disclosure policy](SECURITY.md); the current repository is not independently audited.
+ 
+ ## Community and project docs
+ 
