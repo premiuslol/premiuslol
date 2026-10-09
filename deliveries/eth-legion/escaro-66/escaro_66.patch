@@ -1,0 +1,104 @@
+diff --git a/src/lib/github-pr.test.ts b/src/lib/github-pr.test.ts
+new file mode 100644
+index 0000000..cdcbd08
+--- /dev/null
++++ b/src/lib/github-pr.test.ts
+@@ -0,0 +1,35 @@
++import { describe, expect, it } from 'vitest';
++import { normalizeGitHubPullRequestUrl as normalize } from './github-pr';
++
++describe('Escaro #66 — PR link validation before bounty release', () => {
++  it.each([
++    [null, null],
++    [undefined, null],
++    ['', null],
++    [' \t\n ', null],
++    ['https://github.com/team/repo/pull/42', 'https://github.com/team/repo/pull/42'],
++    ['  https://github.com/team/repo/pull/42/ ', 'https://github.com/team/repo/pull/42'],
++    ['https://github.com/team/repo/pull/42#discussion_r12', 'https://github.com/team/repo/pull/42'],
++    ['https://github.com/team/repo/pull/42?foo=bar', 'https://github.com/team/repo/pull/42'],
++    ['https://github.com/team/repo/pull/00001', null],
++    ['http://github.com/team/repo/pull/42', null],
++    ['https://github.com.evil.test/team/repo/pull/42', null],
++    ['https://github.com@evil.test/team/repo/pull/42', null],
++    ['https://user:password@github.com/team/repo/pull/42', null],
++    ['https://evil.test/github.com/team/repo/pull/42', null],
++    ['https://github.com/team/repo/issues/42', null],
++    ['https://github.com/team/repo/pull/0', null],
++    ['https://github.com/team/repo/pull/-2', null],
++    ['https://github.com/team/repo/pull/4extra', null],
++    ['https://github.com/team/repo/pull/', null],
++    ['https://github.com/team/repo/pull/42/files', null],
++    ['https://github.com/team/repo', null],
++    ['github.com/team/repo/pull/42', null],
++    ['/team/repo/pull/42', null],
++    ['javascript:alert(1)', null],
++    ['https://github.com./team/repo/pull/42', null],
++    ['https://github.com/team/repo/pull/42?x=github.com.evil', 'https://github.com/team/repo/pull/42'],
++  ] as const)('normalizes or rejects %s', (value, expected) => {
++    expect(normalize(value)).toBe(expected);
++  });
++});
+diff --git a/src/lib/github-pr.ts b/src/lib/github-pr.ts
+new file mode 100644
+index 0000000..ac5c7de
+--- /dev/null
++++ b/src/lib/github-pr.ts
+@@ -0,0 +1,24 @@
++/**
++ * Normalizes only canonical GitHub pull-request links, discarding optional query
++ * and fragment components so payout receipts do not persist unrelated data.
++ * This is syntax validation, not proof that GitHub has merged the PR.
++ */
++export function normalizeGitHubPullRequestUrl(value: string | null | undefined): string | null {
++  if (typeof value !== 'string' || !value.trim()) return null;
++
++  let parsed: URL;
++  try {
++    parsed = new URL(value.trim());
++  } catch {
++    return null;
++  }
++
++  if (parsed.protocol !== 'https:' || parsed.hostname !== 'github.com'
++    || parsed.username || parsed.password || parsed.port) return null;
++
++  const match = /^\/([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9_.-]+)\/pull\/([1-9][0-9]*)\/?$/.exec(parsed.pathname);
++  if (!match || match[2] === '.' || match[2] === '..') return null;
++
++  const [, owner, repo, number] = match;
++  return `https://github.com/${owner}/${repo}/pull/${number}`;
++}
+diff --git a/src/pages/maintainer.tsx b/src/pages/maintainer.tsx
+index 9e19619..9ed1567 100644
+--- a/src/pages/maintainer.tsx
++++ b/src/pages/maintainer.tsx
+@@ -10,6 +10,7 @@ import {
+ } from '../lib/model';
+ import { useApp } from '../lib/store';
+ import { PLATFORM } from '../lib/platform';
++import { normalizeGitHubPullRequestUrl } from '../lib/github-pr';
+ import { Avatar, Chip, EASE, Empty, Item, ModalHost, Page, PageHead, Stagger } from '../components/ui';
+ 
+ const STATUS_TONE: Record<Repo['status'], string> = { Pending: 'warn', Verified: 'ok', Rejected: 'bad' };
+@@ -292,6 +293,11 @@ import { Avatar, Chip, EASE, Empty, Item, ModalHost, Page, PageHead, Stagger } f
+ 
+   // Merging releases the escrowed bounty to the assignee and writes their receipt.
+   const release = (issue: Issue, target: Application) => {
++    const pr = normalizeGitHubPullRequestUrl(target.pr);
++    if (!pr) {
++      notify('Provide a valid GitHub pull request URL before releasing this bounty.');
++      return;
++    }
+     const contributor = applicantName(target, state.session.contributor ?? 'You');
+     setState(s => ({
+       ...s,
+@@ -304,7 +310,7 @@ import { Avatar, Chip, EASE, Empty, Item, ModalHost, Page, PageHead, Stagger } f
+         contributor,
+         address: isOwnApplication(target) ? s.payoutAddress : null,
+         amount: issue.bounty,
+-        pr: target.pr ?? '',
++        pr,
+         paidAt: new Date().toISOString().slice(0, 10),
+       }, ...s.receipts],
+     }));

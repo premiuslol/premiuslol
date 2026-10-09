@@ -1,0 +1,88 @@
+name: Escaro #66 source-pinned readiness
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-escaro-66-20261009
+
+permissions:
+  contents: read
+
+jobs:
+  patch-tests-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: packet
+      - uses: actions/checkout@v4
+        with:
+          repository: Escaro-Labs/escaro
+          ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          persist-credentials: false
+          path: upstream
+      - name: Verify exact source, apply patch and inspect only expected paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/escaro-66/escaro_66.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          git -C upstream diff --check
+          test "$(git -C upstream status --short --untracked-files=all | wc -l)" -eq 3
+          test -f upstream/src/lib/github-pr.ts
+          test -f upstream/src/lib/github-pr.test.ts
+          test -f upstream/src/pages/maintainer.tsx
+          grep -q 'normalizeGitHubPullRequestUrl(target.pr)' upstream/src/pages/maintainer.tsx
+          echo ESCARO_66_PINNED_PATCH_APPLY_PASS
+      - name: Validate failure path before receipt state mutation
+        shell: bash
+        run: |
+          node <<'JS'
+          const fs = require('node:fs');
+          const src = fs.readFileSync('upstream/src/pages/maintainer.tsx', 'utf8');
+          const begin = src.indexOf('const release = (issue: Issue, target: Application) => {');
+          const end = src.indexOf('  };', begin);
+          if (begin < 0 || end < 0) throw Error('release not found');
+          const b = src.slice(begin, end);
+          const at = (s) => b.indexOf(s);
+          if ([at('normalizeGitHubPullRequestUrl(target.pr)'),at('if (!pr)'),at('return;'),at('setState('),at('notify(')].some(x=>x<0)) throw Error('guard missing');
+          if (!(at('normalizeGitHubPullRequestUrl(target.pr)') < at('if (!pr)') && at('if (!pr)') < at('notify(') && at('notify(') < at('return;') && at('return;') < at('setState('))) throw Error('release mutates before guard');
+          if (!b.includes('        pr,')) throw Error('receipt does not persist normalized PR');
+          console.log('EARLY_RETURN_ERROR_BEFORE_RECEIPT_MUTATION_PASS');
+          JS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Install upstream baseline without postinstall scripts
+        working-directory: upstream
+        run: npm ci --ignore-scripts
+      - name: Install missing Vitest tooling for temporary CI-only verification
+        working-directory: upstream
+        run: npm install --no-save --ignore-scripts vitest@2.1.9
+      - name: Run source-pinned URL guard regression tests
+        working-directory: upstream
+        run: npx vitest run src/lib/github-pr.test.ts
+      - name: Check production build with the applied patch
+        working-directory: upstream
+        run: npm run build
+      - name: Install Chromium for upstream build-and-smoke parity
+        working-directory: upstream
+        run: npx playwright-core install --with-deps chromium
+      - name: Smoke test against production build
+        working-directory: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --port 3000 --strictPort &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000 >/dev/null
+          npm run test:smoke -- http://localhost:3000
