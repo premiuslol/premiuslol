@@ -1,0 +1,60 @@
+name: Vellara #100 README source-map readiness
+on:
+  push:
+    branches:
+      - prep/eth-legion-vellara-100-20261009
+permissions:
+  contents: read
+jobs:
+  source-pinned-roadmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Vellara-Labs/vellara
+          ref: 669970a061210bc39c681972287ad3edc5d36724
+          path: upstream
+          persist-credentials: false
+      - name: Apply pinned one-file README patch and validate all linked paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/vellara-100/vellara_100.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          git -C upstream diff --check
+          test "$(git -C upstream diff --name-only)" = "README.md"
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          root = Path('upstream')
+          text = (root/'README.md').read_text()
+          section = text.split('## Project roadmap\n',1)[1].split('\n## ',1)[0]
+          rows = [line for line in section.splitlines() if line.startswith('- [')]
+          assert len(rows)>=7, rows
+          assert all(line.startswith(('- [ ] ', '- [x] ')) for line in rows)
+          links = re.findall(r'\]\(([^)]+)\)', section)
+          assert links
+          for link in links:
+            assert (root/link).exists(), f'dead roadmap link: {link}'
+          for entry in ('sdk/', 'tests/integration/', 'scripts/', 'docker-compose.yml', 'assets/', 'code-of-conduct.md'):
+            assert entry in text.split('## Repository map',1)[1].split('## Project roadmap',1)[0]
+          assert (root/'contracts/rwa-token/src/allowance.rs').is_file()
+          assert (root/'contracts/rwa-token/src/sep41_compliance.rs').is_file()
+          assert (root/'tests/integration/lifecycle.test.ts').is_file()
+          print('README_ROADMAP_LINKS_AND_SOURCE_MAP_PASS')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install SDK workspaces without lifecycle hooks
+        working-directory: upstream
+        run: npm install --ignore-scripts
+      - name: Build real TypeScript SDK
+        working-directory: upstream
+        run: npm run build:sdk
