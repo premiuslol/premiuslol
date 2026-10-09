@@ -1,0 +1,57 @@
+name: Settla #89 private readiness CI
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-settla-89-20261009
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-deletion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: packet
+      - uses: actions/checkout@v4
+        with:
+          repository: Settla-Labs/settla-app
+          ref: 8096ce2d49f58ec3a869599f2d6bfc7e722c3638
+          persist-credentials: false
+          path: upstream
+      - name: Apply exact three-file deletion patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/settla-89/settla_89.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          git -C upstream diff --check
+          for f in 'src/app/(protected)/p2p/utils/cryptoAssets.ts' 'src/app/(protected)/p2p/utils/paymentMethods.ts' 'src/app/(protected)/dashboard/utils/assets.ts'; do
+            test ! -e "upstream/$f"
+          done
+          test -f 'upstream/src/features/order/mocks/demo-order.ts'
+          echo EXACT_THREE_FILE_DELETION_PASS
+          echo 'Remaining name references for source review (not assumed absent):'
+          git -C upstream grep -n -E 'cryptoAssets|paymentMethods|dashboard/utils/assets' -- src || true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: upstream/pnpm-lock.yaml
+      - name: Install with postinstall scripts disabled
+        working-directory: upstream
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run existing upstream unit tests
+        working-directory: upstream
+        run: pnpm test
+      - name: Run existing upstream lint
+        working-directory: upstream
+        run: pnpm run lint
