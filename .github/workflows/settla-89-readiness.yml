@@ -46,6 +46,13 @@ jobs:
           node-version: "22"
           cache: pnpm
           cache-dependency-path: upstream/pnpm-lock.yaml
+      - name: Work around upstream's missing pnpm workspace packages (CI-only)
+        working-directory: upstream
+        shell: bash
+        run: |
+          # Original repo's pnpm-workspace.yaml contains only allowBuilds, so
+          # pnpm exits before tests. Do NOT include this in the delivered patch.
+          printf "\npackages:\n  - '.'\n" >> pnpm-workspace.yaml
       - name: Install with postinstall scripts disabled
         working-directory: upstream
         run: pnpm install --frozen-lockfile --ignore-scripts
