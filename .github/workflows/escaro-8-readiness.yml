@@ -1,0 +1,47 @@
+name: Escaro #8 private readiness CI
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-escaro-8-20261009
+
+permissions:
+  contents: read
+
+jobs:
+  source-pinned-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: packet
+      - uses: actions/checkout@v4
+        with:
+          repository: Escaro-Labs/escaro
+          ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          persist-credentials: false
+          path: upstream
+      - name: Add exact proposed test file to upstream source
+        run: |
+          cp packet/deliveries/eth-legion/escaro-8/model.test.ts upstream/src/lib/model.test.ts
+          test "$(git -C upstream status --short --untracked-files=all)" = "?? src/lib/model.test.ts"
+          git -C upstream diff --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Install existing dependencies without postinstall hooks
+        working-directory: upstream
+        run: npm ci --ignore-scripts
+      - name: Add missing Vitest runner as ephemeral CI-only tooling
+        working-directory: upstream
+        run: npm install --no-save --ignore-scripts vitest@2.1.9
+      - name: Verify exact proposed tests with real model.ts
+        working-directory: upstream
+        run: npx vitest run src/lib/model.test.ts
+      - name: Check unchanged upstream production build
+        working-directory: upstream
+        run: npm run build
