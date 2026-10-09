@@ -71,3 +71,18 @@ jobs:
       - name: Check production build with the applied patch
         working-directory: upstream
         run: npm run build
+      - name: Install Chromium for upstream build-and-smoke parity
+        working-directory: upstream
+        run: npx playwright-core install --with-deps chromium
+      - name: Smoke test against production build
+        working-directory: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --port 3000 --strictPort &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000 >/dev/null
+          npm run test:smoke -- http://localhost:3000
