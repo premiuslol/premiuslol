@@ -1,0 +1,91 @@
+name: Settla #85 private readiness CI
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-settla-85-20261009
+permissions:
+  contents: read
+
+jobs:
+  source-locked-removal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Settla-Labs/settla-app
+          ref: 8096ce2d49f58ec3a869599f2d6bfc7e722c3638
+          path: upstream
+          persist-credentials: false
+      - name: Strict source patch and remaining-reference check
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/settla-85/settla_85.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          test ! -e 'upstream/src/features/wallet/presentation/hooks/useWalletPay.ts'
+          test "$(git -C upstream diff --name-only)" = "src/features/wallet/presentation/hooks/useWalletPay.ts"
+          git -C upstream diff --check
+          if git -C upstream grep -n -F 'useWalletPay' -- src; then
+            echo 'ERROR: remaining symbol useWalletPay reference' >&2
+            exit 1
+          fi
+          if git -C upstream grep -n -F '/stellar/pay' -- src; then
+            echo 'ERROR: remaining deprecated payment-path reference' >&2
+            exit 1
+          fi
+          test -f 'upstream/src/features/wallet/presentation/hooks/useSend.ts'
+          echo 'EXACT_SOURCE_UNUSED_LEGACY_HOOK_DELETION_PASS'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: upstream/pnpm-lock.yaml
+      - name: Ephemeral workaround for upstream malformed workspace and lockfile
+        working-directory: upstream
+        shell: bash
+        run: |
+          printf "\npackages:\n  - '.'\n" >> pnpm-workspace.yaml
+          pnpm install --no-frozen-lockfile --ignore-scripts
+      - name: Full upstream tests
+        working-directory: upstream
+        run: pnpm test
+      - name: Lint
+        working-directory: upstream
+        run: pnpm run lint
+      - name: Compare exact TypeScript diagnostics with unpatched baseline
+        working-directory: upstream
+        shell: bash
+        run: |
+          set +e
+          pnpm exec tsc --noEmit --pretty false > "$RUNNER_TEMP/patched-tsc.txt" 2>&1
+          patched_exit=$?
+          git restore -- 'src/features/wallet/presentation/hooks/useWalletPay.ts'
+          pnpm exec tsc --noEmit --pretty false > "$RUNNER_TEMP/baseline-tsc.txt" 2>&1
+          baseline_exit=$?
+          set -e
+          echo "PATCHED_TSC_EXIT=$patched_exit BASELINE_TSC_EXIT=$baseline_exit"
+          if [ "$patched_exit" -ne "$baseline_exit" ]; then
+            echo "The patched and baseline TypeScript exit codes differ" >&2
+            diff -u "$RUNNER_TEMP/baseline-tsc.txt" "$RUNNER_TEMP/patched-tsc.txt" || true
+            exit 1
+          fi
+          if ! diff -u "$RUNNER_TEMP/baseline-tsc.txt" "$RUNNER_TEMP/patched-tsc.txt"; then
+            echo "The patch changed TypeScript diagnostics" >&2
+            exit 1
+          fi
+          if [ "$baseline_exit" -eq 0 ]; then
+            echo 'PATCHED_AND_ORIGINAL_TYPESCRIPT_CLEAN'
+          else
+            echo 'PATCH_INTRODUCED_ZERO_TYPESCRIPT_ERRORS; ORIGINAL_BASELINE_ALREADY_FAILS'
+            head -n 15 "$RUNNER_TEMP/baseline-tsc.txt"
+          fi
