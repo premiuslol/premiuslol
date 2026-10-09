@@ -53,9 +53,9 @@ jobs:
           # Original repo's pnpm-workspace.yaml contains only allowBuilds, so
           # pnpm exits before tests. Do NOT include this in the delivered patch.
           printf "\npackages:\n  - '.'\n" >> pnpm-workspace.yaml
-      - name: Install with postinstall scripts disabled
+      - name: Install CI-only with preexisting lockfile overrides mismatch handled
         working-directory: upstream
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
       - name: Run existing upstream unit tests
         working-directory: upstream
         run: pnpm test
