@@ -1,0 +1,73 @@
+/** Escaro #8 — pure-model regression tests. No network, wallet or state mutation. */
+import { describe, expect, it } from 'vitest';
+import {
+  initialState,
+  nextIssueId,
+  statusTone,
+  suggestedBounty,
+  type Issue,
+  type ApplicationStatus,
+} from './model';
+
+function issue(id: string): Issue {
+  return {
+    id,
+    repoId: 'cli',
+    title: 'Synthetic verification fixture',
+    description: 'No external systems accessed',
+    criteria: [],
+    complexity: 'Trivial',
+    bounty: 150,
+    created: '2026-10-09',
+  };
+}
+
+describe('nextIssueId', () => {
+  it('starts with 1 for an empty list', () => {
+    expect(nextIssueId([])).toBe('1');
+  });
+
+  it('increments the specifically referenced 842 seed', () => {
+    expect(nextIssueId([issue('215'), issue('842'), issue('301')])).toBe('843');
+  });
+
+  it('uses the ACTUAL current initialState seed maximum (843)', () => {
+    // The live source also seeds 843, so the next id is 844, not 843.
+    expect(nextIssueId(initialState().issues)).toBe('844');
+  });
+
+  it('increments a newly added 999 id above the seed maximum', () => {
+    expect(nextIssueId([...initialState().issues, issue('999')])).toBe('1000');
+  });
+
+  it('treats a nonnumeric id as zero without breaking valid maxima', () => {
+    expect(nextIssueId([issue('n/a'), issue('842')])).toBe('843');
+    expect(nextIssueId([issue('n/a')])).toBe('1');
+  });
+
+  it('treats an empty id as zero under the current implementation', () => {
+    expect(nextIssueId([issue('')])).toBe('1');
+  });
+});
+
+describe('statusTone — every ApplicationStatus', () => {
+  it.each<[ApplicationStatus, string]>([
+    ['Paid', 'ok'],
+    ['Rejected', 'bad'],
+    ['Applied', ''],
+    ['Assigned', 'warn'],
+    ['PR submitted', 'warn'],
+  ])('%s maps to %s', (status, expected) => {
+    expect(statusTone(status)).toBe(expected);
+  });
+});
+
+describe('suggestedBounty — all complexity levels', () => {
+  it.each([
+    ['Trivial', 150],
+    ['Medium', 400],
+    ['High', 900],
+  ] as const)('%s maps to %d', (complexity, reward) => {
+    expect(suggestedBounty(complexity)).toBe(reward);
+  });
+});

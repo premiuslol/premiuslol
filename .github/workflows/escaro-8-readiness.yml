@@ -1,0 +1,53 @@
+name: Escaro #8 private readiness CI
+
+on:
+  push:
+    branches:
+      - prep/eth-legion-escaro-8-20261009
+
+permissions:
+  contents: read
+
+jobs:
+  source-pinned-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: packet
+      - uses: actions/checkout@v4
+        with:
+          repository: Escaro-Labs/escaro
+          ref: 02907cff0252b07171ac1146d4c0ea8322d5b05b
+          persist-credentials: false
+          path: upstream
+      - name: Apply exact delivery patch and verify test-file identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/escaro-8/escaro_8.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          test "$(git -C upstream status --short --untracked-files=all)" = "?? src/lib/model.test.ts"
+          cmp packet/deliveries/eth-legion/escaro-8/model.test.ts upstream/src/lib/model.test.ts
+          git -C upstream diff --no-index --check /dev/null upstream/src/lib/model.test.ts || test "$?" -eq 1
+          echo ESCARO_8_EXACT_NEW_FILE_PATCH_PASS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: upstream/package-lock.json
+      - name: Install existing dependencies without postinstall hooks
+        working-directory: upstream
+        run: npm ci --ignore-scripts
+      - name: Add missing Vitest runner as ephemeral CI-only tooling
+        working-directory: upstream
+        run: npm install --no-save --ignore-scripts vitest@2.1.9
+      - name: Verify exact proposed tests with real model.ts
+        working-directory: upstream
+        run: npx vitest run src/lib/model.test.ts
+      - name: Check unchanged upstream production build
+        working-directory: upstream
+        run: npm run build
