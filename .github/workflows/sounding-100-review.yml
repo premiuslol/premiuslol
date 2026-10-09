@@ -1,0 +1,55 @@
+name: Sounding #100 public review verification
+
+on:
+  pull_request:
+    paths:
+      - "deliveries/eth-legion/sounding-100/**"
+      - ".github/workflows/sounding-100-review.yml"
+  push:
+    branches:
+      - review/eth-legion-sounding-100-20261009
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout review packet without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: packet
+      - name: Checkout exact upstream commit as data only
+        uses: actions/checkout@v4
+        with:
+          repository: Sounding-Labs/sounding
+          ref: 53e9196215aac94e4d02218759f501b70e137d37
+          persist-credentials: false
+          path: upstream
+      - name: Verify patch against complete original repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/packet/deliveries/eth-legion/sounding-100/sounding_100.patch"
+          git -C upstream apply --check "$patch"
+          git -C upstream apply "$patch"
+          git -C upstream diff --check
+          test "$(git -C upstream diff --name-only)" = "server/index.html"
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          old = subprocess.check_output(
+              ['git','-C','upstream','show','HEAD:server/index.html'], text=True
+          )
+          new = Path('upstream/server/index.html').read_text()
+          start = 'function formatBalance(amount) {'
+          end = '// Generate personalized recommendation panel'
+          assert old[old.index(start):old.index(end)] == new[new.index(start):new.index(end)]
+          assert new.count('@param {number} amount') == 1
+          print('EXACT_SOURCE_PATCH_APPLIED_AND_FUNCTION_UNCHANGED')
+          PY
+      - name: Run isolated behavior regression with zero external credentials
+        run: node packet/deliveries/eth-legion/sounding-100/verify_format_balance.cjs
