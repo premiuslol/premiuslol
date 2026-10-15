@@ -1,18 +1,38 @@
-# Hi, I'm George
+# Hi, I'm George 👋
 
-I'm a Greece-based software-development graduate and early-career developer, available for small, clearly scoped paid technical work and suitable junior developer opportunities.
+**Software developer · Small fixes, thoughtful testing, and practical solutions**
 
-I work with HTML, CSS, JavaScript and PHP. I can help with responsive layouts, browser QA, debugging, small scripts and data preparation. My tested local project work also covers automation reliability: duplicate-safe actions (idempotency), retries and reconciliation of uncertain results.
+I'm a software-development graduate based in Greece. I enjoy turning frustrating bugs into small, understandable fixes — especially when a clear reproduction and regression test can prevent the same problem from coming back.
 
-## Selected work
+I work with **JavaScript, PHP, HTML/CSS and Python**, and I'm interested in web development, developer tooling, QA and workflow reliability.
 
-- **[Emberstead](https://darkbasilisk.itch.io/emberstead)** — my browser colony-survival game, published as KalGames. The [mobile portrait update](https://darkbasilisk.itch.io/emberstead/devlog/1662720/emberstead-v107-mobile-portrait-update) documents work on touch scrolling, responsive panels and mobile navigation.
-- **[Merged open-source contribution](https://github.com/open-covenant/covenant/pull/286)** — a small launch-plan documentation correction accepted upstream in Open Covenant.\n- **[Workflow reliability case study](https://github.com/premiuslol/premiuslol/tree/main/proof/workflow-reliability)** — a synthetic/local, runnable example of duplicate-safe actions, bounded retries and reconciliation after uncertain external results. It is not client work or a production integration.
+### 🤝 How I can help
 
-## Work with me
+- Reproduce and fix a small bug in an existing project.
+- Investigate failing tests, scripts or CI workflows.
+- Improve responsive layouts and browser behavior.
+- Write focused regression tests and explain what changed.
 
-For a bounded bug fix, web repair, script or workflow review, [describe your task through Technical Help](https://premius-technical-help.netlify.app). We can agree the scope and how to verify completion before work starts.
+I also enjoy contributing to open source when a project welcomes help. I aim for **small, reviewable patches**, clear communication and respect for maintainers' time. I use AI-assisted development where permitted, while checking and taking responsibility for the work.
 
-English and Greek. I prefer asynchronous written communication.
+### 🔎 Selected work
 
-I use AI tools where permitted and take responsibility for reviewing and testing the result.
+- **[Emberstead](https://darkbasilisk.itch.io/emberstead)** — a browser colony-survival game I published under KalGames. The [mobile portrait update](https://darkbasilisk.itch.io/emberstead/devlog/1662720/emberstead-v107-mobile-portrait-update) covers touch scrolling, responsive panels and navigation.
+- **[Open-source contribution](https://github.com/open-covenant/covenant/pull/286)** — a small documentation correction accepted upstream.
+- **[Workflow reliability example](https://github.com/premiuslol/premiuslol/tree/main/proof/workflow-reliability)** — a runnable local demonstration of duplicate-safe operations, bounded retries and recovery after uncertain results. This is an illustrative project, not client production work.
+
+### ☕ Work with me or say hello
+
+Have a **small bug, broken workflow or web issue** that could use another pair of eyes?
+
+**[Tell me about the problem →](https://premius-technical-help.netlify.app)**
+
+I welcome clearly scoped paid projects and open-source collaboration. For paid work, we can agree on the scope, expected result and verification before starting.
+
+If something I've shared has helped you, a kind note or GitHub star is always appreciated. No obligation.
+
+**Languages:** English & Greek · **Communication:** asynchronous, written-first
+
+---
+
+<sub>Useful fixes over flashy claims. Reproducible evidence over “it works on my machine.”</sub>
